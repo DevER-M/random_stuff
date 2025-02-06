@@ -2,14 +2,16 @@ from typing import Sequence, Any
 import time
 
 
-def measure(func): 
-    def wrap(*args, **kwargs): 
-        start = time.time() 
-        result = func(*args, **kwargs) 
-        end = time.time() 
-        print(f"{func.__name__}, {((end-start)*1000):.2f}ms") 
-        return result 
-    return wrap 
+def measure(func):
+    def wrap(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__}, {((end-start)*1000):.2f}ms")
+        return result
+
+    return wrap
+
 
 class Node:
     def __init__(self, value, next=None):
@@ -45,9 +47,9 @@ class LinkedList:
     def __len__(self):
         return sum(1 for _ in self)
 
-    def __contains__(self,value):
-        return any(node==value for node in self)
-    
+    def __contains__(self, value):
+        return any(node == value for node in self)
+
     def __getitem__(self, depth: slice | int):
         if depth < 0:
             raise IndexError("Index Out Of Range")
@@ -183,6 +185,30 @@ class LinkedList:
             ptr.next, prev, ptr = prev, ptr, ptr.next
         self.head = prev
 
+    def clear(self):
+        self.head = None
+
+    def pop(self, depth):
+        ptr = self.head
+        while depth != 1:
+            ptr = ptr.next
+            depth -= 1
+            if ptr is None:
+                raise IndexError("Index Out Of Range")
+        retval = ptr.next
+        ptr.next = ptr.next.next
+        return retval
+
+    def remove(self, value):
+        ptr = self.head
+        while value != ptr.next.value:
+            ptr = ptr.next
+            if ptr is None:
+                raise ValueError("Value Not Found")
+        retval = ptr.next
+        ptr.next = ptr.next.next
+        return retval
+
 
 def test():
     x = LinkedList.from_seq("abc")
@@ -205,10 +231,9 @@ def test():
 
 
 def test2():
-
-    x = LinkedList.from_seq(range(10_000_000))
-    y = LinkedList.from_seq(range(1_000_000))
-    x+y
+    x = LinkedList.from_seq(range(10))
+    print(x.remove(5))
+    print(x)
 
 
 if __name__ == "__main__":
