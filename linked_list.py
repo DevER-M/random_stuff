@@ -1,5 +1,15 @@
 from typing import Sequence, Any
+import time
 
+
+def measure(func): 
+    def wrap(*args, **kwargs): 
+        start = time.time() 
+        result = func(*args, **kwargs) 
+        end = time.time() 
+        print(f"{func.__name__}, {((end-start)*1000):.2f}ms") 
+        return result 
+    return wrap 
 
 class Node:
     def __init__(self, value, next=None):
@@ -35,7 +45,10 @@ class LinkedList:
     def __len__(self):
         return sum(1 for _ in self)
 
-    def __getitem__(self, depth: slice | int):  # implement slicing
+    def __contains__(self,value):
+        return any(node==value for node in self)
+    
+    def __getitem__(self, depth: slice | int):
         if depth < 0:
             raise IndexError("Index Out Of Range")
         ptr = self.head
@@ -53,12 +66,13 @@ class LinkedList:
             return operand
         elif operand.head is None:
             return self
-        new = LinkedList.from_seq(list(self))  # can be better
-        ptr = new.head
-        while ptr.next is not None:
+
+        head = self.head
+        ptr = head
+        while ptr.next:
             ptr = ptr.next
         ptr.next = operand.head
-        return new
+        return LinkedList(head)
 
     @staticmethod
     def from_seq(_seq: Sequence):
@@ -66,8 +80,8 @@ class LinkedList:
             return LinkedList(Node(_seq))
         _head = Node(_seq[0])
         ptr = _head
-        for e in _seq[1:]:
-            ptr.next = Node(e)
+        for value in _seq[1:]:
+            ptr.next = Node(value)
             ptr = ptr.next
         return LinkedList(_head)
 
@@ -190,5 +204,12 @@ def test():
     print(x + y)
 
 
+def test2():
+
+    x = LinkedList.from_seq(range(10_000_000))
+    y = LinkedList.from_seq(range(1_000_000))
+    x+y
+
+
 if __name__ == "__main__":
-    test()
+    test2()
