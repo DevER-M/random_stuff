@@ -237,4 +237,7 @@ def test2():
 
 
 if __name__ == "__main__":
-    test2()
+    import pickle
+    testdata=LinkedList.from_seq(range(1000))
+    with open("linkedlistdata","wb+") as f:
+        pickle.dump(testdata,f)
