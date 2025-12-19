@@ -111,7 +111,7 @@ def show(expr: Expr):
         case Div(numerator,denominator):
             return f"({show(numerator)})/({show(denominator)})"
 
-        case Pow(Var(name), int(exp)|float(exp)): 
+        case Pow(Var(name), exp) if isinstance(exp,(int,float)): 
             return f"{name}^{exp}"
         case Pow(base,exp):
             return f"({show(base)})^({show(exp)})"
@@ -130,12 +130,39 @@ def simplify(expr: Expr):
 
         case Mul(a, b):
             a, b = simplify(a), simplify(b)
-            if a == Const(0) or b == Const(0): return Const(0)
-            if a == Const(1): return b
-            if b == Const(1): return a
-            if isinstance(a, Const) and isinstance(b, Const):
-                return Const(a.value * b.value)
-            return Mul(a, b)
+            match a,b:
+                case Const(1),b:
+                    return b
+                case a,Const(1):
+                    return a
+                case a,b if a==Const(0) or b==Const(0):
+                    return Const(0)
+                case Const(a_value),Const(b_value):
+                    return Const(a_value * b_value)
+                case a,Div(numerator,denominator):
+                    return simplify(Div(simplify(Mul(numerator,a)),denominator))
+                case b,Div(numerator,denominator):
+                    return simplify(Div(simplify(Mul(numerator,b)),denominator))
+                case _:
+                    return Mul(a, b)
+
+        case Div(numerator,denominator):
+            numerator,denominator=simplify(numerator),simplify(denominator)
+            match numerator,denominator:
+                case numerator,Const(1):
+                    return numerator
+                case Pow(x1,n),Pow(x2,m) \
+                    if x1==x2 and isinstance(n,(int,float)) and isinstance(m,(int,float)) and n>m:
+                    return simplify(Pow(x1,n-m))
+
+                case Pow(x1,n),Pow(x2,m) \
+                    if x1==x2 and isinstance(n,(int,float)) and isinstance(m,(int,float)) and m>n:
+                    return simplify(Div(1,Pow(x2,m-n)))
+
+                case Pow(x1,n),Var(x2):
+                    return simplify(Pow(x1,n-1))
+                case _:
+                    return Div(numerator,denominator)
 
         case Pow(base, exp):
             base = simplify(base)
@@ -153,3 +180,4 @@ expr=Add(
     )
 print(show(simplify(expr)))
 print(show(simplify(D(expr))))    
+print(show(simplify(Div(Pow(Var('x'),3),Pow(Var('x'),4)))))
