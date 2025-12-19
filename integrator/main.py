@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Union
 
 class Expr:
     pass
@@ -17,45 +18,85 @@ class Add(Expr):
     right: Expr
 
 @dataclass(frozen=True)
+class Sub(Expr):
+    left: Expr
+    right: Expr
+
+@dataclass(frozen=True)
 class Mul(Expr):
     left: Expr
     right: Expr
 
 @dataclass(frozen=True)
+class Div(Expr):
+    numerator: Expr | float
+    denominator: Expr | float
+
+@dataclass(frozen=True)
 class Pow(Expr):
     base: Expr
-    exp: int | float # should be expression later
+    exp: int | float | Expr
+
+@dataclass(frozen=True)
+class Sin(Expr):
+    expr:Expr
+
+@dataclass(frozen=True)
+class Cos(Expr):
+    expr:Expr
+
+@dataclass(frozen=True)
+class Tan(Expr):
+    expr:Expr
+
+@dataclass(frozen=True)
+class Cosec(Expr):
+    expr:Expr
+
+@dataclass(frozen=True)
+class Sec(Expr):
+    expr:Expr
+
+@dataclass(frozen=True)
+class Cot(Expr):
+    expr:Expr
+
+@dataclass(frozen=True)
+class Log(Expr):
+    expr:Expr
 
 expr=Add(
-    Pow(Var('x'),2),
+    Pow(Var('x'),Pow(Var('x'),2)),
     Mul(Const(2),Var('x'))
     )
 
 def D(expr:Expr):
-    if isinstance(expr,Add):
-        return Add(D(expr.left),D(expr.right))
-    if isinstance(expr,Const):
-        return Const(0)
-    if isinstance(expr,Var):
-        return Const(1)
-    if isinstance(expr,Pow):
-        return Mul(Const(expr.exp),Pow(expr.base,expr.exp-1))
-    if isinstance(expr,Mul):
-        return Add(Mul(expr.left,D(expr.right)),Mul(expr.right,D(expr.left)))
-    else:
-        pass
+    match expr:
+        case Add(left,right)    : return Add(D(expr.left), D(expr.right))
+        case Const(value)       : return Const(0)
+        case Var(name)          : return Const(1)
+        case Log(Const(value))  : return Const(0)
+        case Mul(left,right)    : return Add(Mul(expr.left, D(expr.right)), Mul(expr.right, D(expr.left)))
+
+        case Pow(base, int(exp)|float(exp)):
+            return Mul(Const(expr.exp), Pow(expr.base, expr.exp-1))
+        case Pow(base, exp):
+            return Mul(Pow(base, exp), D(Mul(exp, Log(base))))
+        case Log(expr):
+            return Mul(Div(Const(1), expr), D(expr))
+        case _                  : raise ValueError("unknown function")
 
 
 def show(expr: Expr):
     match expr:
-        case Const(value)    : return str(value)
+        case Const(value)            : return str(value)
         case Mul(Const(value),right) : return f"{value}{show(right)}"
-        case Mul(left,Const(value)) : return f"{value}{show(left)}"
-        case Pow(Var(name),exp) : return f"{name}^{exp}"
-        case Mul(left,right) : return f"({show(left)})*({show(right)})"
-        case Pow(base,exp)   : return f"({show(base)})^{exp}"
-        case Add(left,right) : return f"({show(left)} + {show(right)})"
-        case Var(name)       : return name
+        case Mul(left,Const(value))  : return f"{value}{show(left)}"
+        case Pow(Var(name),exp)      : return f"{name}^{exp}"
+        case Mul(left,right)         : return f"({show(left)})*({show(right)})"
+        case Pow(base,exp)           : return f"({show(base)})^{exp}"
+        case Add(left,right)         : return f"({show(left)} + {show(right)})"
+        case Var(name)               : return name
 
 def simplify(expr: Expr):
     match expr:
@@ -88,4 +129,4 @@ def simplify(expr: Expr):
 
 
 print(show(simplify(expr)))
-print(show(simplify(D(expr))))    
+print(simplify(D(expr)))    

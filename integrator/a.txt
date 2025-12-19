@@ -1,0 +1,55 @@
+Add(
+    left=Mul(
+        left=Pow(
+            base=Var(name='x'), 
+            exp=Pow(
+                base=Var(name='x'), 
+                exp=2)), 
+        right=Add(
+            left=Mul(
+                left=Pow(
+                    base=Var(name='x'), 
+                    exp=2), 
+                right=Mul(
+                    left=Div(
+                        numerator=Const(value=1), 
+                        denominator=Var(name='x')), 
+                    right=Const(value=1))), 
+            right=Mul(
+                left=Log(expr=Var(name='x')), 
+                right=Mul(
+                    left=Const(value=2),
+                    right=Pow(
+                        base=Var(name='x'), 
+                        exp=1))))), 
+    right=Add(
+        left=Mul(
+            left=Const(value=2), 
+            right=Const(value=1)), 
+        right=Mul(
+            left=Var(name='x'), 
+            right=Const(value=0))))
+
+
+
+Add(
+    left=Mul(
+        left=Pow(
+            base=Var(name='x'), 
+            exp=Pow(
+                base=Var(name='x'), 
+                exp=2)), 
+        right=Add(
+            left=Mul(
+                left=Pow(
+                    base=Var(name='x'), 
+                    exp=2), 
+                right=Div(
+                    numerator=Const(value=1), 
+                    denominator=Var(name='x'))), 
+            right=Mul(
+                left=Log(expr=Var(name='x')), 
+                right=Mul(
+                    left=Const(value=2), 
+                    right=Var(name='x'))))), 
+    right=Const(value=2))
