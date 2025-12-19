@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from typing import Union
 
 class Expr:
@@ -157,9 +158,9 @@ def simplify(expr: Expr):
 
                 case Pow(x1,n),Pow(x2,m) \
                     if x1==x2 and isinstance(n,(int,float)) and isinstance(m,(int,float)) and m>n:
-                    return simplify(Div(1,Pow(x2,m-n)))
+                    return simplify(Div(Const(1),Pow(x2,m-n)))
 
-                case Pow(x1,n),Var(x2):
+                case Pow(x1,n),Var(x2) if isinstance(n,(int,float)):
                     return simplify(Pow(x1,n-1))
                 case _:
                     return Div(numerator,denominator)
@@ -178,6 +179,9 @@ expr=Add(
     Pow(Var('x'),Pow(Var('x'),2)),
     Mul(Const(2),Var('x'))
     )
-print(show(simplify(expr)))
-print(show(simplify(D(expr))))    
-print(show(simplify(Div(Pow(Var('x'),3),Pow(Var('x'),4)))))
+#print(show(simplify(expr)))
+#print(show(simplify(D(expr))))    
+
+expr=Pow(Var('x'),Pow(Sin(Cos(Pow(Var('x'),2))),Log(Tan(Pow(Var('x'),2)))))
+print(len(str(D(expr))))
+print(len(str(simplify(D(expr)))))
