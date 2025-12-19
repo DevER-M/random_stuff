@@ -65,25 +65,27 @@ class Cot(Expr):
 class Log(Expr):
     expr:Expr
 
-expr=Add(
-    Pow(Var('x'),Pow(Var('x'),2)),
-    Mul(Const(2),Var('x'))
-    )
 
 def D(expr:Expr):
     match expr:
-        case Add(left,right)    : return Add(D(expr.left), D(expr.right))
+        case Add(left,right)    : return Add(D(left), D(right))
         case Const(value)       : return Const(0)
         case Var(name)          : return Const(1)
         case Log(Const(value))  : return Const(0)
-        case Mul(left,right)    : return Add(Mul(expr.left, D(expr.right)), Mul(expr.right, D(expr.left)))
+        case Log(x)             : return Mul(Div(Const(1),x),D(x))
+        case Mul(left,right)    : return Add(Mul(left, D(right)), Mul(right, D(left)))
+        case Sin(x)             : return Mul(Cos(x),D(x))
+        case Cos(x)             : return Mul(Mul(Const(-1),Sin(x)),D(x))
+        case Tan(x)             : return Mul(Pow(Sec(x),Const(2)),D(x))
+        case Cosec(x)           : return Mul(Mul(Mul(Const(-1),Cosec(x)),Cot(x)),D(x))
+        case Sec(x)             : return Mul(Mul(Sec(x),Tan(x)),D(x))
+        case Cot(x)             : return Mul(Mul(Const(-1),Pow(Cosec(x),Const(2))),D(x))
 
         case Pow(base, int(exp)|float(exp)):
             return Mul(Const(expr.exp), Pow(expr.base, expr.exp-1))
-        case Pow(base, exp):
+        case Pow(base, exp): 
             return Mul(Pow(base, exp), D(Mul(exp, Log(base))))
-        case Log(expr):
-            return Mul(Div(Const(1), expr), D(expr))
+        
         case _                  : raise ValueError("unknown function")
 
 
@@ -92,11 +94,29 @@ def show(expr: Expr):
         case Const(value)            : return str(value)
         case Mul(Const(value),right) : return f"{value}{show(right)}"
         case Mul(left,Const(value))  : return f"{value}{show(left)}"
-        case Pow(Var(name),exp)      : return f"{name}^{exp}"
         case Mul(left,right)         : return f"({show(left)})*({show(right)})"
-        case Pow(base,exp)           : return f"({show(base)})^{exp}"
         case Add(left,right)         : return f"({show(left)} + {show(right)})"
+        case Sub(left,right)         : return f"({show(left)} - {show(right)})"
         case Var(name)               : return name
+        case Sin(x)                  : return f"sin({show(x)})"
+        case Cos(x)                  : return f"cos({show(x)})"
+        case Tan(x)                  : return f"tan({show(x)})"
+        case Cosec(x)                : return f"cosec({show(x)})"
+        case Sec(x)                  : return f"sec({show(x)})"
+        case Cot(x)                  : return f"cot({show(x)})"
+        case Log(x)                  : return f"log({show(x)})"
+
+        case Div(float(numerator),float(denominator)):
+            return f"{numerator/denominator}"
+        case Div(numerator,denominator):
+            return f"({show(numerator)})/({show(denominator)})"
+
+        case Pow(Var(name), int(exp)|float(exp)): 
+            return f"{name}^{exp}"
+        case Pow(base,exp):
+            return f"({show(base)})^({show(exp)})"
+        case other:
+            return other
 
 def simplify(expr: Expr):
     match expr:
@@ -127,6 +147,9 @@ def simplify(expr: Expr):
             return expr
 
 
-
+expr=Add(
+    Pow(Var('x'),Pow(Var('x'),2)),
+    Mul(Const(2),Var('x'))
+    )
 print(show(simplify(expr)))
-print(simplify(D(expr)))    
+print(show(simplify(D(expr))))    
