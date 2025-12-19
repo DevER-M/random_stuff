@@ -8,7 +8,7 @@ $$f(x)
 
 $$\frac{df}{dx} =(\sin(\cos(x^2)))^{\log(\tan(x^2))}
 \left[
-\frac{2x,\sec^2(x^2)}{\tan(x^2)}\ln(\sin(\cos(x^2)))
+\frac{2x\sec^2(x^2)}{\tan(x^2)}\ln(\sin(\cos(x^2)))
 +
 \log(\tan(x^2))\frac{-2x\sin(x^2)\cos(\cos(x^2))}{\sin(\cos(x^2))}
 \right]$$
